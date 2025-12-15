@@ -200,14 +200,7 @@ This IAM implementation elevates the project beyond a typical demo and showcases
 
 ---
 
-### Next (Optional Enhancements)
 
-* Add IAM flow to architecture diagram
-* Add row-level security (RLS) examples
-* Add cost-control IAM policies
-* Prepare interview walkthrough of IAM + UC
-
----
 
 
 
