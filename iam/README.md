@@ -89,6 +89,7 @@ s3://nyc-911-lakehouse-usw2/
 Each layer is governed independently through Unity Catalog.
 
 ---
+<img width="1277" height="475" alt="image" src="https://github.com/user-attachments/assets/d2024744-279e-4a07-ac09-b7b8cd58d817" />
 
 ## Unity Catalog External Locations
 
