@@ -195,12 +195,5 @@ It emphasizes **security, scalability, maintainability, and analytics reliabilit
 
 ---
 
-If you want next, I can:
 
-* Tighten this further for **Databricks DE interviews**
-* Write a **LinkedIn project post**
-* Add a **1–2 sentence recruiter summary** at the top
-* Review your **IAM documentation folder**
-
-Just say the word.
 
