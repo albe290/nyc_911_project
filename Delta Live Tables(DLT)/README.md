@@ -195,6 +195,3 @@ This pipeline is designed for **real-world operational analytics**, not experime
 
 
 
-Just say the word.
-
-
