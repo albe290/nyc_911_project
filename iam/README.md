@@ -62,6 +62,7 @@ The role trust policy explicitly allows Databricks to assume the role:
   ]
 }
 ```
+<img width="1023" height="252" alt="IAM_TRUST_POLICY" src="https://github.com/user-attachments/assets/5549cbf7-c0b5-49d0-8d2c-aaa8462cc3e0" />
 
 ### Key Security Properties
 
@@ -136,6 +137,7 @@ COMMENT 'Catalog root for NYC 911 Lakehouse managed tables';
 ```
 
 ---
+<img width="1267" height="555" alt="image" src="https://github.com/user-attachments/assets/89a67fc8-eab7-4a26-be4c-deb8fda5400c" />
 
 ## Validation & Auditing
 
@@ -156,6 +158,7 @@ This confirms:
 * Unity Catalog governance enforcement
 
 ---
+<img width="1263" height="631" alt="Validate_external_locations" src="https://github.com/user-attachments/assets/d09a2bdc-e4b0-4238-95e0-44e61ac064bb" />
 
 ## Security Design Principles
 
