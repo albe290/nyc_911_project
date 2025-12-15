@@ -176,6 +176,7 @@ dlt/
 ├── bronze_911.sql        # Raw ingestion
 ├── silver_911.sql        # Validation & normalization
 ├── gold_911_kpis.sql     # KPI aggregations
+├── DLT_Pipeline_graph    # DLT Pipeline
 └── README.md             # This documentation
 ```
 
