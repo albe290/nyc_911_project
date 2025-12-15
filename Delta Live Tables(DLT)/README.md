@@ -42,7 +42,8 @@ The pipeline graph clearly reflects this flow, with each layer materialized as a
 
 ## Bronze Layer — Raw Ingestion
 
-**File:** `bronze_911.sql`
+<img width="1265" height="628" alt="dlt_bronze_911 sql" src="https://github.com/user-attachments/assets/214ce017-60b5-427b-982a-68554b23c075" />
+
 
 ### Purpose
 
@@ -65,7 +66,8 @@ The Bronze layer ingests raw NYC 911 CSV data from S3 and applies **minimal tran
 
 ## Silver Layer — Cleaned & Normalized
 
-**File:** `silver_911.sql`
+<img width="1273" height="633" alt="dlt_sliver_911 sql" src="https://github.com/user-attachments/assets/065bb22e-5603-414a-aa9e-bbc51733f1ff" />
+
 
 ### Purpose
 
@@ -94,7 +96,8 @@ The Silver layer applies **data validation and normalization**, preparing the da
 
 ## Gold Layer — KPI Aggregations
 
-**File:** `gold_911_kpis.sql`
+<img width="1270" height="631" alt="dlt_gold__kpis sql" src="https://github.com/user-attachments/assets/ce563947-2f22-4690-a633-587230c6e647" />
+
 
 ### Purpose
 
@@ -136,6 +139,8 @@ This pipeline leverages core Delta Live Tables capabilities:
 DLT manages execution order, retries, and lineage automatically.
 
 ---
+<img width="1268" height="632" alt="DLT_Pipeline_Graph" src="https://github.com/user-attachments/assets/14c087d6-3a04-4b76-ac2c-446850eaead5" />
+
 
 ## Operational Visibility
 
