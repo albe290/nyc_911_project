@@ -1,17 +1,21 @@
-NYC 911 Operational Performance Lakehouse (Databricks DLT)
-Overview
+# NYC 911 Operational Performance Lakehouse (Databricks DLT)
 
-This project implements a production-style Lakehouse architecture for analyzing NYC 911 emergency response performance using Databricks Delta Live Tables (DLT).
-The goal is to transform raw 911 operational data into trusted, KPI-ready datasets that support executive dashboards and SLA monitoring.
+## Overview
 
-The pipeline follows a Bronze → Silver → Gold data model, enforces cloud-native security via IAM & Unity Catalog, and exposes business-ready metrics such as incident volume trends, response time SLAs, and SLA breach rates.
+This project implements a **production-grade Lakehouse architecture** for analyzing **NYC 911 emergency response performance** using **Databricks Delta Live Tables (DLT)**.
+Its purpose is to transform raw operational 911 data into **trusted, KPI-ready datasets** that power executive dashboards and enable SLA monitoring.
 
-This project was intentionally designed to mirror real enterprise data engineering patterns, not a toy or notebook-only workflow.
+The pipeline follows a **Bronze → Silver → Gold** data model, applies **cloud-native security through AWS IAM and Unity Catalog**, and exposes **business-ready metrics** such as incident volume trends, response time SLAs, and SLA breach rates.
 
-Architecture
+This implementation was intentionally designed to reflect **real enterprise data engineering patterns**, rather than a notebook-only or exploratory workflow.
 
-High-level flow:
+---
 
+## Architecture
+
+### High-Level Data Flow
+
+```
 Raw 911 Data
    ↓
 Bronze (Raw Delta Tables)
@@ -21,186 +25,182 @@ Silver (Cleaned & Normalized)
 Gold (KPI Aggregations & BI Views)
    ↓
 Databricks Dashboards
+```
 
+### Key Design Principles
 
-Key design principles:
+* Clear separation of ingestion, transformation, and analytics
+* Delta Lake ACID guarantees enforced at every layer
+* IAM-based access with no static credentials
+* BI tools consume **only Gold-layer datasets**
 
-Clear separation of ingestion, transformation, and analytics
+---
 
-Delta Lake ACID guarantees at every layer
+## Data Pipeline (Bronze → Silver → Gold)
 
-IAM-based access (no static credentials)
+### 🟫 Bronze Layer — Raw Ingestion
 
-BI consumes only Gold-layer views
+* Stores raw NYC 911 operational records as **Delta tables**
+* Minimal transformations applied
+* Original schema preserved for traceability and replay
+* Serves as the immutable system of record
 
-Data Pipeline (Bronze → Silver → Gold)
-🟫 Bronze Layer — Raw Ingestion
+---
 
-Stores raw NYC 911 operational records as Delta tables
+### 🪙 Silver Layer — Cleaned & Normalized
 
-Minimal transformations
+* Standardizes timestamps and agency identifiers
+* Removes malformed or incomplete records
+* Normalizes operational metrics required for KPI calculations
+* Designed for reuse across multiple analytical use cases
 
-Schema preserved for traceability and replay
+---
 
-Acts as the immutable system of record
+### 🥇 Gold Layer — Analytics & KPIs
 
-🪙 Silver Layer — Cleaned & Normalized
+* Pre-aggregated, business-ready datasets
+* Optimized for BI performance and consistency
 
-Standardizes timestamps and agency identifiers
+**Key metrics include:**
 
-Removes malformed or incomplete records
+* Total incident volume
+* Average call-to-first-pickup time
+* Dispatch and pickup response times
+* SLA breach percentage
 
-Normalizes metrics required for KPI calculations
+All transformations are orchestrated using **Delta Live Tables (DLT)** to ensure reliability, observability, and maintainability.
 
-Designed for reuse across multiple analytics use cases
+---
 
-🥇 Gold Layer — Analytics & KPIs
+## Security & IAM Design
 
-Pre-aggregated, business-ready datasets
+This project avoids static credentials entirely and leverages **AWS IAM with Databricks Unity Catalog** for secure, scalable access control.
 
-Metrics include:
+### IAM Highlights
 
-Total incident volume
+* Dedicated IAM role (`nyc_911_role`) for Databricks access
+* Role assumption via **STS with external ID**
+* No access keys stored in code, notebooks, or configuration files
 
-Average call-to-first-pickup time
+---
 
-Dispatch and pickup response times
+### Unity Catalog & External Locations
 
-SLA breach percentage
+* Separate external locations defined for:
 
-Optimized for BI and dashboard performance
+  * `bronze`
+  * `silver`
+  * `gold`
+  * `catalog`
+* Each layer maps to a controlled S3 prefix
+* Access centrally governed through Unity Catalog
 
-All transformations are orchestrated using Delta Live Tables (DLT) for reliability, observability, and maintainability.
+This setup mirrors **enterprise-grade Databricks security patterns** commonly used in production environments.
 
-Security & IAM Design
+---
 
-This project intentionally avoids static credentials and instead uses AWS IAM + Databricks Unity Catalog for secure access.
+## Gold KPIs & BI Layer
 
-IAM Highlights
+All business logic is finalized in the **Gold layer**, ensuring dashboards remain:
 
-Dedicated IAM role (nyc_911_role) for Databricks
+* Simple
+* Fast
+* Consistent
+* Trustworthy
 
-Role assumption via STS + external ID
+### Core KPIs
 
-No access keys stored in code or notebooks
+* **Total 911 Incidents (2014–Present)**
+* **Monthly Incident Volume by Agency**
+* **Average Call-to-First-Pickup Time**
+* **SLA Breach Rate (%)**
 
-Unity Catalog & External Locations
+This approach prevents metric drift and eliminates duplicated logic across BI tools.
 
-Separate external locations for:
+---
 
-bronze
+## Dashboards
 
-silver
+Dashboards are built directly on **Gold-layer datasets** and include:
 
-gold
-
-catalog
-
-Each layer maps to a controlled S3 prefix
-
-Access governed centrally through Unity Catalog
-
-This mirrors enterprise-grade Databricks security patterns used in production environments.
-
-Gold KPIs & BI Layer
-
-All business logic is finalized in the Gold layer, ensuring dashboards remain:
-
-Simple
-
-Fast
-
-Consistent
-
-Trustworthy
-
-Core KPIs
-
-Total 911 Incidents (2014–Present)
-
-Monthly Incident Volume by Agency
-
-Average Call-to-First-Pickup Time
-
-SLA Breach Rate (%)
-
-This design prevents metric drift and eliminates duplicated logic across BI tools.
-
-Dashboards
-
-Dashboards are built directly on Gold-layer datasets and include:
-
-📈 Monthly 911 Incident Volume (by agency)
-
-⏱️ Average Call-to-First-Pickup Trends
-
-🔢 Total Incident Count KPI Tile
-
-🚨 SLA Breach Rate KPI Tile
+* 📈 Monthly 911 Incident Volume by agency
+* ⏱️ Average Call-to-First-Pickup trends
+* 🔢 Total Incident Count KPI tile
+* 🚨 SLA Breach Rate KPI tile
 
 Dashboards are filterable by agency and optimized for operational monitoring.
 
-Important: No dashboards query Bronze or Silver tables directly.
+> **Important:** No dashboards query Bronze or Silver tables directly.
 
-Engineering Decisions (Why This Matters)
+---
 
-DLT instead of notebooks → pipeline reliability and data quality
+## Engineering Decisions (Why This Matters)
 
-Gold-layer KPIs → prevents BI logic sprawl
+* **Delta Live Tables over notebooks** → improved pipeline reliability and data quality
+* **Gold-layer KPIs** → prevents BI logic sprawl
+* **IAM + Unity Catalog** → production-grade security
+* **Layered S3 storage** → scalable and auditable data layout
+* **Separation of SQL and BI logic** → improved maintainability
 
-IAM + Unity Catalog → production-grade security
+These decisions align with how modern data platforms are built and operated at scale.
 
-Layered S3 structure → scalable and auditable storage
+---
 
-Separation of SQL & BI logic → maintainability
+## Scalability & Future Enhancements
 
-These decisions reflect how modern data platforms are built at scale.
+Potential future extensions include:
 
-Scalability & Future Enhancements
+* Streaming ingestion (Auto Loader / Kafka)
+* SLA breach alerting
+* Automated historical backfills
+* Agency-level anomaly detection
+* Cost optimization using Z-ORDER and clustering
 
-Potential extensions:
+The architecture is intentionally designed to support these enhancements without rework.
 
-Streaming ingestion (Auto Loader / Kafka)
+---
 
-Alerting on SLA breaches
+## Tech Stack
 
-Historical backfill automation
+* Databricks
+* Delta Live Tables (DLT)
+* Delta Lake
+* Unity Catalog
+* AWS S3
+* AWS IAM (STS AssumeRole)
+* SQL (Analytics & BI)
+* Databricks Dashboards
 
-Agency-level anomaly detection
+---
 
-Cost optimization via Z-ORDER and clustering
+## Project Structure
 
-The architecture is intentionally designed to support these without rework.
-
-Tech Stack
-
-Databricks
-
-Delta Live Tables (DLT)
-
-Delta Lake
-
-Unity Catalog
-
-AWS S3
-
-AWS IAM (STS AssumeRole)
-
-SQL (Analytics & BI)
-
-Databricks Dashboards
-
-Project Structure
+```
 nyc_911_project/
 ├── architecture/      # Architecture diagrams
 ├── dashboards/        # Dashboard screenshots
-├── dlt/               # DLT pipeline definitions
+├── dlt/               # Delta Live Tables pipeline definitions
 ├── iam/               # IAM & Unity Catalog configuration
-├── sql/               # SQL transformations & views
+├── sql/               # SQL transformations and BI views
 ├── screenshots/       # Supporting visuals
 └── README.md
+```
 
-Final Notes
+---
 
-This project was built to demonstrate real-world data engineering practices, not just technical correctness.
-It emphasizes security, scalability, maintainability, and analytics reliability — the same principles required in production environments.
+## Final Notes
+
+This project was built to demonstrate **real-world data engineering practices**, not just technical correctness.
+It emphasizes **security, scalability, maintainability, and analytics reliability** — the same principles required in production-grade data platforms.
+
+---
+
+If you want next, I can:
+
+* Tighten this further for **Databricks DE interviews**
+* Write a **LinkedIn project post**
+* Add a **1–2 sentence recruiter summary** at the top
+* Review your **IAM documentation folder**
+
+Just say the word.
+
