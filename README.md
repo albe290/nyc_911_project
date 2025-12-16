@@ -60,7 +60,8 @@ Databricks Dashboards (Gold-only)
 
 ### Architecture Diagram
 
-![NYC 911 Lakehouse Architecture](architecture/nyc911-lakehouse-architecture.png)
+<img width="1536" height="1024" alt="nyc911 lakehouse architecture" src="https://github.com/user-attachments/assets/ed76ebb5-9955-4fb8-89f4-5a87b5530e47" />
+
 
 > This architecture enforces **Gold-only consumption**, strict IAM security boundaries, and centralized governance via Unity Catalog.
 
