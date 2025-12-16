@@ -191,7 +191,7 @@ nyc_911_project/
 ## Final Notes
 
 This project was built to demonstrate **real-world data engineering practices**, not just technical correctness.
-It emphasizes **security, scalability, maintainability, and analytics reliability** — the same principles required in production-grade data platforms.
+It emphasizes **security, scalability, maintainability, and analytics reliability**  the same principles required in production-grade data platforms.
 
 ---
 
