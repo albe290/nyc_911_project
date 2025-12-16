@@ -13,7 +13,7 @@ The SQL layer finalizes business logic for **KPIs, SLA monitoring, and dashboard
 
 The SQL layer follows several key principles:
 
-* **Gold-only access** — no queries read from Bronze or Silver tables
+* **Gold-only access**  no queries read from Bronze or Silver tables
 * **Single source of truth for KPIs**
 * **Window functions over raw aggregation** for dashboard efficiency
 * **Explicit SLA logic** defined once and reused everywhere
