@@ -1,161 +1,163 @@
-# SQL Layer — Analytics & Validation (NYC 911 Lakehouse)
+# SQL Analytics & KPI Layer
 
 ## Overview
 
-This directory contains **SQL queries and views** used to support analytics validation, KPI verification, and BI consumption for the NYC 911 Operational Performance Lakehouse.
+This directory contains all **analytics-grade SQL logic** used to power the NYC 911 Operational Performance dashboards.
+All queries are designed to operate **exclusively on Gold-layer datasets**, ensuring metrics are consistent, auditable, and safe for BI consumption.
 
-SQL is intentionally used **only where it adds clarity and control**, such as:
-
-* Verifying Gold-layer outputs
-* Creating KPI-ready views
-* Performing sanity checks
-* Supporting dashboards and stakeholder analysis
-
-All core transformations are handled upstream by **Delta Live Tables (DLT)**.
-This SQL layer consumes **only trusted Silver and Gold datasets**.
+The SQL layer finalizes business logic for **KPIs, SLA monitoring, and dashboard views**, while keeping transformation complexity out of dashboards and visualization tools.
 
 ---
 
-## Role of SQL in This Architecture
+## Design Principles
 
-SQL is used **after** data engineering logic has been finalized, not during ingestion.
+The SQL layer follows several key principles:
 
-### Responsibilities of the SQL Layer
+* **Gold-only access** — no queries read from Bronze or Silver tables
+* **Single source of truth for KPIs**
+* **Window functions over raw aggregation** for dashboard efficiency
+* **Explicit SLA logic** defined once and reused everywhere
+* **Unity Catalog–managed schemas and views**
 
-* Validate DLT outputs
-* Expose analytics-ready views
-* Support dashboard queries
-* Perform targeted analysis without duplicating pipeline logic
-
-### Responsibilities Explicitly Avoided
-
-* No raw ingestion logic
-* No data cleansing logic
-* No business logic duplication from DLT
-* No queries against Bronze tables
-
-This separation keeps the platform **clean, maintainable, and auditable**.
+This mirrors how analytics SQL is structured in real production data platforms.
 
 ---
 
-## Data Access Pattern
+## Key SQL Components
 
-```
-DLT Gold Tables
-      ↓
-SQL Views / Validation Queries
-      ↓
-Databricks Dashboards
-```
+### KPI Views
 
-All SQL queries assume:
+<img width="1267" height="628" alt="Sanitycheck_kpi_dashboard" src="https://github.com/user-attachments/assets/826ab8a0-719d-4da6-bdfb-fa38013601d4" />
 
-* Unity Catalog governance
-* IAM-based access
-* Gold-layer schema stability
 
----
+This view exposes **core operational KPIs** at a weekly, per-agency grain.
 
-## SQL Use Cases
+**Metrics included:**
 
-### 1. KPI Validation
+* Total incident volume
+* Average call-to-first-pickup time
+* Average dispatch and arrival times
+* Multi-agency incident percentage
 
-SQL is used to:
+**Purpose:**
 
-* Verify aggregation logic
-* Spot-check averages and counts
-* Confirm SLA metrics before dashboards consume them
-
-Example validations include:
-
-* Incident counts by agency
-* Average response times
-* Multi-agency incident percentages
+* Reusable analytics dataset
+* Foundation for all downstream KPI calculations
+* Optimized for BI joins and filtering
 
 ---
 
-### 2. KPI-Ready Views
+### Dashboard KPI View
 
-Some SQL files expose **read-only views** to:
+<img width="944" height="540" alt="Dashboards_nyc_911" src="https://github.com/user-attachments/assets/fb7b1522-91e0-4852-a773-5260390ea6be" />
 
-* Simplify BI consumption
-* Standardize metric naming
-* Reduce dashboard query complexity
 
-This ensures dashboards remain:
+This view is purpose-built for **executive dashboards** and KPI tiles.
 
-* Fast
+**Logic handled here:**
+
+* SLA breach identification
+* Total incident counts (windowed)
+* SLA breach counts (windowed)
+* SLA breach percentage calculation
+
+By handling SLA logic in SQL, dashboards remain:
+
 * Simple
-* Consistent
-* Free of embedded logic
+* Fast
+* Free of duplicated business rules
 
 ---
 
-### 3. Sanity Checks
+## SLA Breach Logic
 
-SQL sanity checks help answer questions like:
+The SLA breach definition is implemented directly in SQL:
 
-* Are response times within realistic bounds?
-* Do weekly aggregates align with expectations?
-* Are nulls or outliers appearing unexpectedly?
+* **SLA Threshold:**
+  Average call-to-first-pickup > **5 seconds**
 
-These checks act as a lightweight quality gate on top of DLT.
+* **Breach Count:**
+  Uses conditional aggregation with window functions
 
----
+* **Breach Percentage:**
+  Computed once and reused across all visualizations
 
-## Design Decisions
-
-### Why Not Do Everything in SQL?
-
-* DLT provides lineage, retries, and observability
-* SQL alone lacks pipeline-level guarantees
-* Business logic belongs upstream, not in BI queries
-
-### Why Still Use SQL?
-
-* SQL excels at validation and analytics
-* Analysts and stakeholders understand SQL
-* Dashboards benefit from simple, stable queries
-
-This balance reflects real-world enterprise data platforms.
+This prevents metric drift and ensures every dashboard reflects the **same SLA definition**.
 
 ---
 
-## Governance & Security
+## Example KPI Query Pattern
+<img width="1267" height="628" alt="Sanitycheck_kpi_dashboard" src="https://github.com/user-attachments/assets/7dda2ec0-3cd9-46d9-bbd2-ae0a40a3d61f" />
 
-All SQL execution is governed by:
-
-* Unity Catalog permissions
-* IAM-backed storage access
-* Catalog-scoped schemas
-
-No credentials are embedded in queries, and access is centrally managed.
-
----
-
-## File Structure
-
-```
-sql/
-├── validation_queries.sql      # KPI and data sanity checks
-├── kpi_views.sql               # BI-facing views
-├── analysis_queries.sql        # Ad-hoc analytics support
-└── README.md                   # This documentation
+```sql
+SELECT
+  sla_breach_incidents,
+  total_incidents_all,
+  sla_breach_pct
+FROM analytics.vw_911_kpis_dashboard
+LIMIT 1;
 ```
 
-*(File names may vary depending on analysis needs.)*
+This query directly powers the **SLA Breach % KPI tile** in the dashboard.
 
 ---
 
-## Key Takeaways
+## Why Window Functions Were Used
 
-* SQL consumes **trusted DLT outputs only**
-* No duplication of ingestion or transformation logic
-* Gold-layer metrics are finalized before SQL usage
-* Dashboards stay clean and performant
-* Governance and security are enforced centrally
+Window functions (`SUM() OVER ()`) were intentionally chosen instead of GROUP BY aggregations because they:
 
-This SQL layer exists to **support analytics**, not replace data engineering.
+* Preserve row-level context
+* Support mixed KPI tiles and trend charts
+* Avoid separate aggregation queries per metric
+* Improve dashboard responsiveness
+
+This approach scales cleanly as new KPIs are added.
+
+---
+
+## Dashboard Integration
+
+The SQL views in this directory are consumed by Databricks Dashboards for:
+
+* 📈 Monthly incident volume trends
+* ⏱️ Response time analysis
+* 🔢 Total incident KPI tiles
+* 🚨 SLA breach rate monitoring
+
+**Important:**
+Dashboards never query raw tables — only curated analytics views.
+
+---
+
+## Governance & Access Control
+
+* Views are registered in **Unity Catalog**
+* Access is granted at the **schema/view level**
+* No direct S3 access is required for BI users
+* All data lineage remains visible via Databricks
+
+This ensures strong governance without sacrificing analytics velocity.
+
+---
+
+## Why This Matters (Interview-Ready)
+
+This SQL layer demonstrates:
+
+* Strong separation of transformation vs analytics logic
+* Production-grade KPI modeling
+* Centralized SLA definitions
+* BI-friendly query design
+* Enterprise-ready governance patterns
+
+This is exactly how analytics SQL is written in real data engineering teams.
+
+---
+
+## Summary
+
+The SQL layer completes the Lakehouse by transforming Gold-layer data into **trusted, reusable analytics views**.
+By centralizing KPI and SLA logic here, the system remains scalable, auditable, and easy to extend as new metrics are introduced.
 
 ---
 
